@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Fermeture">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#c8531a">
+<title>Feuille de tâches</title>
+<style>
+:root{--bg:#f6f4ef;--card:#fff;--ink:#1d1d1b;--mut:#6b675f;--line:#ddd8cc;--acc:#c8531a;--ok:#2f7d4f;--warn:#fff3cd;--bad:#b3261e;--badbg:#fdecea}
+@media (prefers-color-scheme:dark){:root{--bg:#171715;--card:#222220;--ink:#f1eee6;--mut:#a39f94;--line:#3a3935;--warn:#4a3d12;--badbg:#4a1f1b}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.4 -apple-system,system-ui,sans-serif;padding:0 0 env(safe-area-inset-bottom)}
+.wrap{max-width:900px;margin:auto;padding:16px}
+h1{font-size:24px;margin:0 0 4px}
+.sub{color:var(--mut);margin-bottom:16px}
+.bar{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line);padding:10px 16px calc(10px) 16px;padding-top:calc(10px + env(safe-area-inset-top))}
+.bar .in{max-width:900px;margin:auto;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.bar b{flex:1;min-width:160px}
+.prog{flex:2;min-width:180px;height:14px;border-radius:99px;background:var(--line);overflow:hidden}
+.prog i{display:block;height:100%;background:var(--ok);width:0;transition:width .2s}
+.cnt{font-variant-numeric:tabular-nums;min-width:70px;text-align:right}
+button,select,input,textarea{font:inherit;color:var(--ink)}
+.btn{border:1px solid var(--line);background:var(--card);padding:14px 20px;border-radius:12px;cursor:pointer;min-height:48px}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+.btn.big{font-size:20px;padding:18px 24px;width:100%}
+.btn:disabled{opacity:.5}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:16px;overflow:hidden}
+.card h2{margin:0;padding:12px 16px;font-size:18px;background:var(--acc);color:#fff;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.card h2 small{font-weight:400;opacity:.92;font-size:14px}
+.card.fum h2{background:#3b6ea5}.card.comm h2{background:#555}
+.row{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-top:1px solid var(--line);cursor:pointer}
+.row:first-of-type{border-top:0}
+.row input[type=checkbox]{flex:none;width:30px;height:30px;accent-color:var(--ok);margin-top:1px}
+.row .t{flex:1}
+.row.done .t{color:var(--mut);text-decoration:line-through}
+.note{font-size:14px;color:var(--mut);display:block}
+.tag{flex:none;font-size:12px;padding:2px 9px;border-radius:99px;background:var(--line);color:var(--ink);align-self:center;max-width:110px;text-align:center}
+.rules{background:var(--warn);border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:16px}
+.rules summary{font-weight:700;cursor:pointer}
+.rules div{margin-top:6px}
+label.f{display:block;margin-bottom:14px;font-weight:600}
+label.f span{display:block;font-size:14px;color:var(--mut);font-weight:400;margin-bottom:4px}
+input[type=text],input[type=time],select,textarea{width:100%;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px;min-height:48px}
+textarea{min-height:90px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.grid{grid-template-columns:1fr}}
+.models{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+@media(max-width:640px){.models{grid-template-columns:1fr}}
+.model{border:2px solid var(--line);border-radius:14px;padding:16px;background:var(--card);text-align:left;cursor:pointer}
+.model.on{border-color:var(--acc);box-shadow:0 0 0 3px rgba(200,83,26,.25)}
+.model b{display:block;font-size:20px}.model span{color:var(--mut);font-size:15px}
+.pad{padding:16px}
+.wl{display:grid;grid-template-columns:1fr 130px;gap:8px;padding:8px 14px;border-top:1px solid var(--line)}
+.wl.h{font-size:13px;color:var(--mut);background:rgba(128,128,128,.12);border-top:0}
+.err{background:var(--badbg);color:var(--bad);border:1px solid var(--bad);border-radius:12px;padding:12px 16px;margin-bottom:14px}
+.ok{background:#e6f4ea;color:#1e5e35;border:1px solid var(--ok);border-radius:12px;padding:12px 16px;margin-bottom:14px}
+@media(prefers-color-scheme:dark){.ok{background:#173323;color:#9be0b4}}
+.chk{display:flex;gap:12px;align-items:flex-start;margin:10px 0;cursor:pointer}
+.chk input{width:30px;height:30px;flex:none;accent-color:var(--ok)}
+.center{text-align:center;padding:40px 16px}
+.center h1{font-size:30px}
+.small{font-size:14px;color:var(--mut)}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* =====================  CONFIGURATION  ===================== */
+// Coller ici l'adresse du script Google (voir LISEZ-MOI.html). Tant qu'elle est vide, l'envoi est désactivé.
+const ENDPOINT="";
+const APP_VERSION="1.0";
+
+/* =====================  DONNÉES (identiques à la feuille papier)  ===================== */
+const RULES=[
+ "Walkie-talkie dès l'arrivée.",
+ "ACCUEIL : saluer chaque client dans les premières secondes, même au téléphone ou quand on est occupé.",
+ "Arriver 10 min avant l'ouverture. Commencer le close minimum 1 h avant la fermeture.",
+ "FERMETURE À 2 EMPLOYÉS : si une employée quitte plus tôt (selon l'horaire, ou parce qu'on doit couper selon l'achalandage), TOUTES les tâches du close doivent être complétées AVANT qu'elle parte. La collègue qui reste REVÉRIFIE les tâches avant son départ, et les deux signent la feuille de fermeture.",
+ "Tout doit être complété avant de partir. Si fort achalandage : fermer les portes à l'heure, puis rester 15 à 30 min de plus pour finir le close et les tâches (seulement dans ce cas).",
+ "PORTES : le dimanche soir, on ne barre AUCUNE porte. La porte du Fumoir se barre seulement le vendredi à 21 h et le samedi à 17 h. Le Fumoir reste ouvert quand même : les clients passent par PawPaw Snack (explication sur l'affiche de la porte). Autres soirs : on barre les portes du magasin.",
+ "CAMÉRAS : ouvrir les caméras sur l'Alexa dès l'arrivée pour surveiller les autres sections du magasin et voir si un client arrive.",
+ "PAUSE REPAS : l'employé qui prend une pause pour manger doit être remplacé (quelqu'un couvre son poste) et va manger dans la section des tables. On ne mange JAMAIS devant les clients. Très important.",
+ "UNIFORME : pantalon noir propre en tout temps.",
+ "L'escape game doit être remontée CHAQUE soir à la fermeture.",
+ "Caisse : doit balancer à 350 $, sinon aviser Marie-Soleil.",
+ "Octobre à mars : machine à crème glacée FERMÉE lundi, mardi, mercredi – ne pas l'ouvrir.",
+ "BREUVAGES PERSONNELS : gardez votre breuvage sous les comptoirs, jamais à la vue des clients. Le soir, rangez et lavez votre verre. Des verres sur les comptoirs, ce n'est pas professionnel.",
+ "BOOSTERS : toujours rangés et le plus pleins possible. Dès qu'on voit des trous, on remplit entre les clients."
+];
+
+/* ---------- MODÈLE A : 1 employé ---------- */
+const A=[
+ {t:"1. Ouverture",s:"arriver 10 min avant",rows:[
+  "Uniforme en ordre : pantalon noir propre",
+  "Mettre le walkie-talkie",
+  "Ouvrir les caméras sur l'Alexa (surveiller les autres sections, voir si un client arrive)",
+  "Ouvrir les lumières du magasin",
+  "Ouvrir les lumières LED du mini-golf",
+  "Débarrer les portes Explozone et Snack",
+  "Compter la caisse (350 $, sinon aviser Marie-Soleil)",
+  "Ouvrir la musique<span class='note'>Sam. et dim. de jour : clé USB bleue, changer pour la noire à 17 h. Aussi les journées pédagogiques ou fériées.</span>",
+  "Machine à crème glacée : tourner les bâtons (trous vers le bas), appuyer sur les gros flocons, ouvrir 5 min avant<span class='note'>Oct.–mars : NE PAS ouvrir lun., mar., mer.</span>",
+  "Brasser tous les trempages et ouvrir la machine à trempage",
+  "Machine à slush en mode SLUSH (remplir au besoin)",
+  "Vider les réservoirs noirs de la machine à slush et rincer à l'eau chaude",
+  "Vérifier que l'escape game est remontée",
+  "Vérifier que le mini-golf est propre (tournée, ramasser)",
+  "Vérifier les tâches de la veille + lire les notes laissées",
+  "<b>Vérifier les réservations de la journée et s'assurer que nous avons le bon nombre d'employés en place</b>",
+  "Groupes réservés : vérifier la salle, le nombre de personnes et les demandes spéciales avant leur arrivée",
+  "<b>Tournée sécurité avant l'ouverture :</b> planchers secs, rien de pointu ou de cassé au sol, haches et planches en bon état, aucun fil ou objet qui traîne dans les allées",
+  "Salles de bain : vider les poubelles (toilettes et lavabo), vérifier qu'il y a 2 rouleaux dans CHAQUE dispositif de papier de toilette, vérifier et remplir le papier à mains",
+  "Breuvages personnels : s'il reste un verre de la veille, le ranger et le laver, puis noter à la personne de fermeture. Aucun verre ni bouteille sur les comptoirs, à la vue des clients",
+  "Salle de bain handicapé barrée et fermée (en tout temps)",
+  "Désodorisant en spray : entrée Explozone, couloir, parcours mini-golf, devant les allées de hache",
+  "Linge propre mouillé eau chaude sur les vitres de la machine à popcorn"]},
+ {t:"2. Pendant le jour",s:"à faire quand c'est tranquille – pas le soir",rows:[
+  "<b>IMPORTANT – Comptoirs et comptoirs-caisses : tout nettoyés et désinfectés pendant le jour. Vitre bien nettoyée. Nettoyer les comptoirs à plusieurs reprises dans la journée : les comptoirs-caisses doivent être propres en tout temps.</b>",
+  "Laver les étagères du mini-golf",
+  "Cuisine : laver paniers de friteuse, réchaud, plaque, faire la vaisselle et la ranger, désinfecter les comptoirs",
+  "Nettoyage de la section des plaques glacées : propre et vide + balai en dessous",
+  "Aspirateur : entrée du mini-golf et tout le couloir jusqu'à la porte qui mène à la salle de réception (chaque jour)<span class='note'>Avant de quitter à 17 h.</span>",
+  "Si 2 employés et que c'est tranquille ou après un groupe : aspirateur de TOUT le mini-golf s'il est sale, sans attendre la journée prévue dans la semaine",
+  "Tournée mini-golf : ramasser déchets et verres, replacer les petits carrés de départ à chaque trou<span class='note'>À faire le jour également, avant de quitter à 17 h.</span>",
+  "Balai + moppe : cuisine, salles de bain, magasin, allées, entrée et couloir Explozone jusqu'à la porte<span class='note'>Ménage et nettoyage du commerce (côté Explozone et Snack) à faire le jour, avant de quitter.</span>",
+  "Section des tables à manger d'Explozone : aspirateur, moppe, nettoyer les tables, replacer les chaises et les tables pour que ce soit propre",
+  "Nettoyer les salles de bain (poubelles et papiers déjà faits à l'ouverture)",
+  "Salle de réception : vérifier qu'elle a bien été préparée et qu'elle est en état de recevoir un groupe, même un groupe de dernière minute",
+  "Faire le facing du magasin (déplacer pour combler les trous) + boîtes mystère si espace libre",
+  "Remplir les frigos RedBull et tous les frigos du magasin",
+  "Remplir les bières dans le frigo / où les caisses",
+  "Remplir les boosters<span class='note'>Toujours rangés et le plus pleins possible. Dès qu'on voit des trous, on remplit entre les clients. Demander aide au Fumoir si moins occupé.</span>",
+  "Remplir les balles de golf",
+  "Remplir les bulles de bubble tea, les saveurs de slush (min. à moitié), les verres slush et bubble tea, les pailles",
+  "Avant 17 h : nettoyer le frigo bubble tea et les couvercles des pots de bubble tea s'ils sont collants ou sales",
+  "Sauces à kogo plus que la moitié pleines, sinon refaire. Idem mayo et ketchup des clients",
+  "Frigo : 2 crèmes molles vanille de dégelées + 2 de la saveur de la semaine",
+  "Fromage : 3 sachets dégelés (jeter après 5 jours, date au sharpie sur le sac)",
+  "Faire le popcorn au besoin",
+  "Pause repas : faire remplacer son poste, manger dans la section des tables, jamais devant les clients",
+  "<b>Tournée des toilettes aux 2 heures</b> (propreté, papier, poubelles). Écrire l'heure et les initiales : ____ ____ ____ ____ ____",
+  "Entrée : vitres de la porte propres, plancher sec (hiver), tapis d'entrée en place",
+  "Alcool : aucune bouteille de verre ni boisson alcoolisée ne sort des zones prévues (mini-golf, salle, extérieur)",
+  "Voir le tableau de la personne responsable (feuille du jour). Lun.-mer. : l'employé seul fait les deux"]},
+ {t:"3. Fermeture",s:"débuter 1 h avant la fermeture",rows:[
+  "<b>IMPORTANT – Comptoirs et comptoirs-caisses : tout nettoyés et désinfectés ce soir. Vitre bien nettoyée.</b>",
+  "Laver la scelleuse et l'éteindre",
+  "Fermer et nettoyer les trempages (bien fermer les couvercles)",
+  "Machines à slush en mode COOL DRINK + remplir base neutre à la ligne max",
+  "Ranger la limonade au frigo",
+  "Bubble tea : vider le bac de glace dans le lavabo, laisser le plat vide dans le lavabo",
+  "Section des tables à manger d'Explozone : aspirateur, moppe, nettoyer les tables, replacer les chaises et les tables pour que ce soit propre",
+  "Breuvages personnels : aucun verre ni bouteille sur les comptoirs ; verres rangés sous les comptoirs et lavés",
+  "Vider les poubelles, sac propre, jeter au conteneur extérieur",
+  "Jeter les boîtes et le recyclage, rien ne traîne près des caisses",
+  "<b>ESCAPE GAME REMONTÉE – chaque soir, obligatoire avant de partir</b>",
+  "Tiroir Explozone vide et propre (seulement : cartable de référence, enveloppe, ciseau)",
+  "Fermer la caisse (350 $) ; enveloppe au coffre ; pourboires + date + nom dans l'enveloppe du tiroir-caisse",
+  "Écrire les notes pour la personne du lendemain AM",
+  "Portes : voir les règles de base (dimanche soir aucune porte barrée, autres soirs on barre les portes du magasin)"]}
+];
+
+/* ---------- MODÈLE B : 2-3 employés ---------- */
+// qui: A = Explozone/Snack (comptoir, cuisine), B = Magasin/Mini-golf (renfort), F = Fumoir
+const B=[
+ {t:"1. Ouverture",s:"arriver 10 min avant",rows:[
+  ["Tous","Uniforme en ordre : pantalon noir propre"],
+  ["B","Walkie-talkie, lumières du magasin, LED du mini-golf"],
+  ["Tous","Ouvrir les caméras sur l'Alexa (surveiller les autres sections, voir si un client arrive)"],
+  ["B","<b>Tournée du mini-golf AVANT de débarrer le magasin (doit être fait avant l'ouverture)</b> : vérifier que les verres, bouteilles, canettes et déchets ont bien été ramassés à la fermeture, et que l'aspirateur a bien été passé. Mettre le désodorisant pendant la tournée<span class='note'>Si quelque chose a été oublié : le ramasser, puis noter le manque pour la personne de fermeture.</span>"],
+  ["B","Débarrer les portes Explozone et Snack"],
+  ["A","Compter la caisse (350 $, sinon aviser Marie-Soleil)"],
+  ["B","Ouvrir la musique<span class='note'>Sam. et dim. de jour : clé USB bleue, noire à 17 h. Aussi journées pédagogiques / fériées.</span>"],
+  ["A","Machine à crème glacée : bâtons trous vers le bas, gros flocons, ouvrir 5 min avant<span class='note'>Oct.–mars : fermée lun., mar., mer.</span>"],
+  ["A","Brasser les trempages + ouvrir la machine à trempage"],
+  ["A","Slush en mode SLUSH + vider/rincer les réservoirs noirs"],
+  ["A","Vitres de la machine à popcorn propres"],
+  ["B","Escape game remontée ? Mini-golf propre ?"],
+  ["B","Vérifier les tâches de la veille + lire les notes"],
+  ["Tous","<b>Vérifier les réservations de la journée et s'assurer que nous avons le bon nombre d'employés en place</b>"],
+  ["Tous","Groupes réservés : vérifier la salle, le nombre de personnes et les demandes spéciales avant leur arrivée"],
+  ["Tous","<b>Tournée sécurité avant l'ouverture :</b> planchers secs, rien de pointu ou de cassé au sol, haches et planches en bon état, aucun fil ou objet qui traîne dans les allées"],
+  ["B","Salles de bain : vider les poubelles (toilettes et lavabo), vérifier qu'il y a 2 rouleaux dans CHAQUE dispositif de papier de toilette, vérifier et remplir le papier à mains"],
+  ["B","Salle de bain handicapé barrée et fermée"],
+  ["Tous","Breuvages personnels : s'il reste un verre de la veille, le ranger et le laver, puis noter à la personne de fermeture. Aucun verre ni bouteille sur les comptoirs, à la vue des clients"],
+  ["B","Désodorisant : entrée Explozone, couloir, mini-golf, allées de hache"]]},
+ {t:"2. En continu pendant le service",s:"se répartir, cocher quand c'est fait",rows:[
+  ["A","Remplir bulles bubble tea, saveurs slush (min. à moitié), verres, pailles"],
+  ["A","Avant 17 h : nettoyer le frigo bubble tea et les couvercles des pots de bubble tea s'ils sont collants ou sales"],
+  ["A","Sauces à kogo, mayo, ketchup à plus de la moitié"],
+  ["A","Frigo : 2 crèmes molles vanille + 2 saveur de la semaine ; 3 sachets de fromage dégelés (date au sharpie)"],
+  ["A","Popcorn au besoin"],
+  ["Tous","Pause repas : se faire remplacer, manger dans la section des tables, jamais devant les clients"],
+  ["Tous","<b>Tournée des toilettes aux 2 heures</b> (propreté, papier, poubelles). Écrire l'heure et les initiales : ____ ____ ____ ____ ____"],
+  ["Tous","Entrée : vitres de la porte propres, plancher sec (hiver), tapis d'entrée en place"],
+  ["Tous","Alcool : aucune bouteille de verre ni boisson alcoolisée ne sort des zones prévues (mini-golf, salle, extérieur)"],
+  ["Tous","<b>IMPORTANT – Comptoirs et comptoirs-caisses : tout nettoyés et désinfectés pendant le jour. Vitre bien nettoyée. Nettoyer les comptoirs à plusieurs reprises dans la journée : les comptoirs-caisses doivent être propres en tout temps.</b>"],
+  ["A","Vaisselle faite et rangée (rien sur le comptoir)"],
+  ["B","Salle de réception : vérifier qu'elle a bien été préparée et qu'elle est en état de recevoir un groupe, même un groupe de dernière minute<span class='note'>Vérifier que le balai a bien été passé : aucun déchet par terre. Poubelle vide avec un sac propre.</span>"],
+  ["B","<b>Salles de bain : nettoyer</b> (papiers déjà faits à l'ouverture). Cocher chaque étape :"],
+  ["B","&nbsp;&nbsp;↳ Nettoyer les toilettes avec produits nettoyants"],
+  ["B","&nbsp;&nbsp;↳ Vider les poubelles de chaque salle de bain"],
+  ["B","&nbsp;&nbsp;↳ Nettoyer le lavabo"],
+  ["B","&nbsp;&nbsp;↳ Nettoyer les miroirs"],
+  ["B","Laver les étagères du mini-golf"],
+  ["B","Frigos RedBull, bières et tous les frigos du magasin"],
+  ["B","Facing du magasin + boîtes mystère si espace libre"],
+  ["B","Balles de golf"],
+  ["Tous","Boosters du magasin et du Snack : à remplir par la personne du Snack ou du Fumoir, selon l'achalandage. Toujours rangés et le plus pleins possible ; dès qu'on voit des trous, on remplit entre les clients"],
+  ["B","Si 2 employés et que c'est tranquille ou après un groupe : aspirateur de TOUT le mini-golf s'il est sale, sans attendre la journée prévue dans la semaine"],
+  ["B","Jeudi à dimanche (jour), selon l'achalandage : aux 2 heures, vérifier et passer l'aspirateur dans l'entrée du mini-golf, le trou n° 1, la sortie et le passage. Avec de l'achalandage, le mini-golf doit être propre en tout temps"],
+  ["B","Section des tables à manger d'Explozone : aspirateur, moppe, nettoyer les tables, replacer les chaises et les tables pour que ce soit propre"]]},
+ {t:"3. Fermeture – Explozone / Snack",s:"débuter 1 h avant la fermeture",rows:[
+  ["A","Cuisine : paniers de friteuse, réchaud, plaque, comptoirs désinfectés, vaisselle rangée"],
+  ["Tous","<b>IMPORTANT – Comptoirs et comptoirs-caisses : tout nettoyés et désinfectés ce soir. Vitre bien nettoyée.</b>"],
+  ["Tous","Breuvages personnels : aucun verre ni bouteille sur les comptoirs ; verres rangés sous les comptoirs et lavés"],
+  ["A","Laver la scelleuse et l'éteindre"],
+  ["A","Fermer et nettoyer les trempages (couvercles bien fermés)"],
+  ["A","Slush en COOL DRINK + base neutre à la ligne max ; limonade au frigo"],
+  ["A","Bubble tea : bac de glace vidé dans le lavabo, plat laissé dans le lavabo"],
+  ["A","Plaques glacées propres et vides + balai en dessous"],
+  ["A","Poubelles vidées, sac propre, conteneur extérieur ; boîtes et recyclage"],
+  ["A","Tiroir Explozone vide et propre (cartable, enveloppe, ciseau seulement)"],
+  ["A","Fermer la caisse (350 $), enveloppe au coffre, pourboires avec date et nom"]]},
+ {t:"4. Fermeture – Magasin / Mini-golf",s:"en parallèle avec le poste A",rows:[
+  ["B","Aspirateur : entrée du mini-golf et tout le couloir jusqu'à la porte qui mène à la salle de réception (chaque jour)"],
+  ["B","Tournée mini-golf : déchets, verres, petits carrés de départ replacés"],
+  ["B","<b>ESCAPE GAME REMONTÉE – chaque soir, obligatoire avant de partir</b>"],
+  ["B","Balai + moppe : magasin, allées, salles de bain, entrée et couloir Explozone jusqu'à la porte"],
+  ["B","Section des tables à manger d'Explozone : aspirateur, moppe, nettoyer les tables, replacer les chaises et les tables pour que ce soit propre"],
+  ["B","Planchers de la cuisine lavés (avec A)"]]},
+ {t:"5. Lancer de la hache",s:"à faire à la fermeture",rows:[
+  ["B","Balai dans les allées de hache (sable, graines et déchets au sol, y compris près du palmier)"],
+  ["B","Vérifier les planches du lancer de la hache"]]},
+ {t:"6. Escape Game",s:"à faire à la fermeture",rows:[
+  ["B","Classement du back de l'Escape Game (salle arrière) : tout rangé et à sa place"],
+  ["B","Vérifier les feuilles d'instruction pour les indices"],
+  ["B","Vérifier les feuilles d'instruction pour remonter la salle"],
+  ["B","S'assurer d'avoir tout le nécessaire en backup"]]},
+ {t:"7. Fumoir (poste distinct)",s:"porte barrée seulement ven. 21 h et sam. 17 h",fum:true,rows:[
+  ["F","<b>Facing et rangement</b>"],
+  ["F","Facing : chandelles, encens, articles pour fumeurs"],
+  ["F","Faire le facing des parfums : bien replacer les parfums"],
+  ["F","Faire le tour du facing des étagères du magasin"],
+  ["F","Replacer les boucles de ceinture"],
+  ["F","Replacer les sacs à main"],
+  ["F","<b>Tournée d'étiquetage</b> (cocher chaque étape) :"],
+  ["F","&nbsp;&nbsp;↳ Vérifier que les produits sont bien étiquetés"],
+  ["F","&nbsp;&nbsp;↳ Vérifier que les produits scannent<span class='note'>Sinon, l'indiquer sur la feuille prévue à cet effet, dans le cartable des gérants.</span>"],
+  ["F","Faire le facing des chandails : classés en ordre de grandeur et par modèle"],
+  ["F","Remplir les bijoux"],
+  ["F","Ranger les coils"],
+  ["F","Classement dans les comptoirs vitrés"],
+  ["F","Replacer les vapes jetables"],
+  ["F","Faire le facing des comptoirs vitrés"],
+  ["F","Ranger et faire le ménage sous le comptoir"],
+  ["F","<b>Nettoyage</b>"],
+  ["F","Nettoyer le comptoir-caisse et le laisser épuré (rien qui traîne dessus)"],
+  ["F","Nettoyer les vitres des comptoirs avec Bon Ami"],
+  ["F","Vider les poubelles du magasin"],
+  ["F","Balai 20 min avant la fermeture"],
+  ["F","Moppe 20 min avant la fermeture"],
+  ["F","Laver les tables extérieures, vider les poubelles extérieures, balai extérieur"],
+  ["F","Porter les déchets et la récupération"],
+  ["F","<b>Fermeture</b>"],
+  ["F","Mettre la chaîne entre le Fumoir et le Snack"],
+  ["F","Porte du Fumoir : barrer SEULEMENT le vendredi à 21 h et le samedi à 17 h<span class='note'>Le Fumoir reste ouvert : les clients passent par PawPaw Snack (voir affiche sur la porte). Dimanche soir : ne barrer aucune porte.</span>"],
+  ["F","Éteindre les lumières"]]},
+ {t:"8. Dernier tour – tout le monde",s:"",rows:[
+  ["Tous","<b>Si une employée quitte plus tôt (horaire ou achalandage) : TOUTES les tâches du close sont complétées AVANT son départ</b>"],
+  ["Tous","<b>La collègue qui reste a REVÉRIFIÉ chaque tâche avant le départ de l'employée</b><span class='note'>Faire le tour des zones ensemble : entrée, tables, salle arrière, couloir, mini-golf, cuisine, salles de bain.</span>"],
+  ["Tous","<b>Les deux employées ont signé la feuille de fermeture</b><span class='note'>Signature de celle qui part : ______________ &nbsp; Signature de la collègue qui a vérifié : ______________</span>"],
+  ["Tous","Notes écrites pour la personne du lendemain AM"],
+  ["Tous","Tout est coché ? Sinon on le fait avant de quitter"],
+  ["Tous","Aller porter les enveloppes dans le coffre"],
+  ["Tous","<b>Lumières fermées : salle électrique et salle d'escape game arrière. AUCUNE lumière ne doit rester allumée.</b>"],
+  ["Tous","Portes : voir les règles de base (dimanche soir aucune porte barrée, autres soirs on barre les portes du magasin)"]]}
+];
+
+/* Modèle A : bloc Fumoir distinct (là où est l'achalandage le soir) */
+{const f=B.find(x=>x.fum);
+ A.splice(2,0,{t:"3. Fumoir – le soir (là où est l'achalandage)",s:"porte barrée seulement ven. 21 h et sam. 17 h",fum:true,rows:["<b>Boosters du Snack</b> : remplir (lundi, mardi et mercredi soir ; dimanche soir : avec le Snack, selon l'achalandage). Toujours rangés et le plus pleins possible"].concat(f.rows.map(r=>r[1]))});
+ A[3].t="4. Fermeture – Magasin / Mini-golf / Explozone / Snack";
+ A[1].s="à faire le JOUR quand c'est tranquille – le soir l'employé est surtout au Fumoir";}
+
+
+/* Communication entre employés : à remplir chaque jour (dernière page) */
+const COMM=[
+ {t:"Ce qui ne va pas aujourd'hui – message à la direction",s:"ampoule, odeur, problème avec un client ou un employé, etc.",w:true,d:"Quoi, où, depuis quand"},
+ {t:"Incident ou blessure",s:"obligatoire si un incident est arrivé",w:true,d:"Heure, personne concernée, ce qui s'est passé, ce qui a été fait"},
+ {t:"Plaintes ou commentaires de clients",s:"positifs ou négatifs – pour les avis Google",w:true,d:"Ce que le client a dit, quel service (escape, hache, mini-golf, Snack, Fumoir)"},
+ {t:"Équipement brisé",s:"à signaler à la direction",w:true,d:"Quoi, depuis quand, déjà signalé ? (oui / non)"},
+ {t:"Produits demandés par les clients",s:"ce qu'un client a cherché ou demandé",w:true},
+ {t:"Produits qu'on n'a plus en inventaire",s:"rupture de stock",w:true},
+ {t:"Produits à commander – je viens de prendre le dernier",s:"ex. : liquide à vaisselle, papier de toilette",w:true},
+ {t:"Articles qui ne scannent pas – à ajouter dans l'inventaire",s:"écrire le descriptif complet du produit",w:true,d:"Descriptif du produit (nom, couleur, format/taille, prix, code-barres si possible)"}
+];
+A.push(...COMM);B.push(...COMM);
+
+
+
+/* =====================  OUTILS  ===================== */
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function plain(html){const d=document.createElement('div');d.innerHTML=String(html).replace(/<span class='note'>/g,' — <span>').replace(/<br\s*\/?>/g,' ');return d.textContent.replace(/\s+/g,' ').trim()}
+const QUI={A:"Explozone / Snack",B:"Magasin / Mini-golf",F:"Fumoir",Tous:"Tous"};
+const LS={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+
+function sectionsFor(m){
+  const data=m==='A'?A:B;
+  return data.map((s,si)=>({
+    key:m+si, title:s.t, sub:s.s||'', fum:!!s.fum, w:!!s.w, d:s.d||'',
+    rows:(s.rows||[]).map((r,ri)=>{
+      const arr=Array.isArray(r);
+      return {key:m+si+'_'+ri, html:arr?r[1]:r, who:arr?r[0]:'', head:false};
+    })
+  }));
+}
+
+/* =====================  ÉTAT  ===================== */
+const blank=()=>({step:'start',id:null,model:'B',commerce:LS.get('commerce',''),date:new Date().toISOString().slice(0,10),
+  emp:['','',''],resp:'',heure:'',checks:{},comm:{},notes:'',fait:'',verif:'',seul:false,c1:false,c2:false,c3:false});
+let S=Object.assign(blank(),LS.get('draft',{}));
+function save(){LS.set('draft',S)}
+function newSheet(){S=blank();save();render()}
+
+/* =====================  ÉCRANS  ===================== */
+function render(){
+  const app=$('#app');
+  if(S.step==='start')app.innerHTML=startHTML();
+  else if(S.step==='list')app.innerHTML=listHTML();
+  else app.innerHTML=doneHTML();
+  window.scrollTo(0,0);
+  bind();
+}
+
+function startHTML(){
+  const pend=LS.get('pending',[]);
+  return `<div class="wrap">
+  <h1>Feuille de tâches</h1>
+  <div class="sub">Remplis la feuille au fur et à mesure. Elle est envoyée par courriel à la direction quand tu appuies sur « Soumettre » le soir.</div>
+  ${pend.length?`<div class="err"><b>${pend.length} feuille(s) en attente d'envoi</b> (pas de réseau).<br><button class="btn" id="retry" style="margin-top:8px">Réessayer l'envoi maintenant</button></div>`:''}
+  <div class="models">
+    <button class="model ${S.model==='A'?'on':''}" data-m="A"><b>Modèle A – 1 employé</b><span>Dimanche soir, lundi, mardi, mercredi</span></button>
+    <button class="model ${S.model==='B'?'on':''}" data-m="B"><b>Modèle B – 2 à 3 employés</b><span>Jeudi, vendredi, samedi, dimanche (jour)</span></button>
+  </div>
+  <div class="card"><div class="pad">
+    <label class="f"><span>Commerce</span><input type="text" id="commerce" value="${esc(S.commerce)}" placeholder="Ex. : Explozone"></label>
+    <div class="grid">
+      <label class="f"><span>Date</span><input type="text" id="date" value="${esc(S.date)}" readonly></label>
+      <label class="f"><span>Heure de fermeture</span><input type="time" id="heure" value="${esc(S.heure)}"></label>
+    </div>
+    <label class="f"><span>Employé 1 (prénom et nom)</span><input type="text" data-emp="0" value="${esc(S.emp[0])}"></label>
+    <label class="f"><span>Employé 2 (s'il y a lieu)</span><input type="text" data-emp="1" value="${esc(S.emp[1])}"></label>
+    <label class="f"><span>Employé 3 (s'il y a lieu)</span><input type="text" data-emp="2" value="${esc(S.emp[2])}"></label>
+    <label class="f"><span>Responsable du quart</span><input type="text" id="resp" value="${esc(S.resp)}"></label>
+  </div></div>
+  <div id="serr"></div>
+  <button class="btn pri big" id="go">Commencer la feuille</button>
+  </div>`;
+}
+
+function rulesHTML(){return `<details class="rules"><summary>Règles de base (toucher pour lire)</summary>${RULES.map(r=>`<div>• ${esc(r)}</div>`).join('')}</details>`}
+
+function stats(){
+  let tot=0,done=0;
+  sectionsFor(S.model).forEach(s=>{if(!s.w)s.rows.forEach(r=>{tot++;if(S.checks[r.key])done++})});
+  return {tot,done};
+}
+
+function listHTML(){
+  const secs=sectionsFor(S.model);
+  const st=stats();
+  const body=secs.map(s=>{
+    if(s.w){
+      const rows=[0,1,2,3].map(i=>{const v=(S.comm[s.key]||[])[i]||{d:'',w:''};
+        return `<div class="wl"><input type="text" data-c="${s.key}" data-i="${i}" data-f="d" value="${esc(v.d)}"><input type="text" data-c="${s.key}" data-i="${i}" data-f="w" value="${esc(v.w)}" placeholder="Initiales"></div>`}).join('');
+      return `<div class="card comm"><h2><span>${esc(s.title)}</span><small>${esc(s.sub)}</small></h2><div class="wl h"><span>${esc(s.d||'Produit / descriptif')}</span><span>Écrit par</span></div>${rows}</div>`;
+    }
+    return `<div class="card ${s.fum?'fum':''}"><h2><span>${esc(s.title)}</span><small>${esc(s.sub)}</small></h2>${s.rows.map(r=>`
+      <label class="row ${S.checks[r.key]?'done':''}"><input type="checkbox" data-k="${r.key}" ${S.checks[r.key]?'checked':''}><span class="t">${r.html}</span>${r.who?`<span class="tag">${QUI[r.who]||r.who}</span>`:''}</label>`).join('')}</div>`;
+  }).join('');
+  const empOpts=sel=>`<option value="">— choisir —</option>`+S.emp.filter(x=>x.trim()).map(n=>`<option ${sel===n?'selected':''}>${esc(n)}</option>`).join('');
+  const B_=S.model==='B';
+  return `<div class="bar"><div class="in"><b>${S.model==='A'?'Modèle A – 1 employé':'Modèle B – 2-3 employés'} · ${esc(S.commerce)}</b><div class="prog"><i id="pbar" style="width:${st.tot?Math.round(100*st.done/st.tot):0}%"></i></div><span class="cnt" id="pcnt">${st.done} / ${st.tot}</span></div></div>
+  <div class="wrap">
+  ${rulesHTML()}
+  ${body}
+  <div class="card"><h2><span>Double vérification et soumission</span><small>dernière étape</small></h2><div class="pad">
+    <div class="grid">
+      <label class="f"><span>Tâches faites par</span><select id="fait">${empOpts(S.fait)}</select></label>
+      <label class="f"><span>Vérifié par (la collègue)</span><select id="verif" ${S.seul?'disabled':''}>${empOpts(S.verif)}</select></label>
+    </div>
+    ${B_?`<label class="chk"><input type="checkbox" id="seul" ${S.seul?'checked':''}><span>Je suis seul(e) ce soir : pas de collègue pour vérifier</span></label>`:''}
+    <label class="chk"><input type="checkbox" id="c1" ${S.c1?'checked':''}><span><b>Toutes les tâches du close sont complétées</b> avant le départ de la première personne</span></label>
+    ${B_?`<label class="chk"><input type="checkbox" id="c2" ${S.c2?'checked':''}><span><b>La collègue a revérifié chaque tâche</b> avant de quitter (tour des zones fait ensemble)</span></label>`:''}
+    <label class="chk"><input type="checkbox" id="c3" ${S.c3?'checked':''}><span><b>Aucune lumière allumée</b> (salle électrique, escape game arrière), enveloppes au coffre</span></label>
+    <label class="f" style="margin-top:14px"><span>Notes pour la direction et pour la personne du lendemain (obligatoire si des tâches ne sont pas faites : dis pourquoi)</span><textarea id="notes">${esc(S.notes)}</textarea></label>
+    <div id="serr"></div>
+    <button class="btn pri big" id="submit">Soumettre la feuille</button>
+    <p class="small">La feuille est envoyée par courriel à la direction. Tu ne peux pas la modifier après l'envoi.</p>
+    <button class="btn" id="back" style="margin-top:8px">← Modifier les noms ou le modèle</button>
+  </div></div>
+  </div>`;
+}
+
+function doneHTML(){
+  return `<div class="wrap center"><h1>✔ Feuille envoyée</h1><p>Merci ! La direction a reçu la feuille de fermeture par courriel.</p><button class="btn pri big" id="newb" style="max-width:400px">Nouvelle feuille</button></div>`;
+}
+
+/* =====================  LOGIQUE  ===================== */
+function bind(){
+  const app=$('#app');
+  app.querySelectorAll('.model').forEach(b=>b.onclick=()=>{S.model=b.dataset.m;save();render()});
+  const g=$('#go');if(g)g.onclick=()=>{
+    S.commerce=$('#commerce').value.trim();S.heure=$('#heure').value;S.resp=$('#resp').value.trim();
+    app.querySelectorAll('[data-emp]').forEach(i=>S.emp[+i.dataset.emp]=i.value.trim());
+    const miss=[];if(!S.commerce)miss.push('le nom du commerce');if(!S.emp[0])miss.push('au moins un employé');if(!S.resp)miss.push('le responsable du quart');
+    if(miss.length){$('#serr').innerHTML=`<div class="err">Il manque : ${miss.join(', ')}.</div>`;return}
+    LS.set('commerce',S.commerce);S.step='list';S.id=S.id||(Date.now().toString(36)+Math.random().toString(36).slice(2,7));save();render();
+  };
+  const r=$('#retry');if(r)r.onclick=()=>flushPending(true);
+  app.querySelectorAll('input[data-k]').forEach(c=>c.onchange=()=>{
+    S.checks[c.dataset.k]=c.checked;c.closest('.row').classList.toggle('done',c.checked);save();
+    const st=stats();$('#pbar').style.width=(st.tot?Math.round(100*st.done/st.tot):0)+'%';$('#pcnt').textContent=st.done+' / '+st.tot;
+  });
+  app.querySelectorAll('input[data-c]').forEach(i=>i.oninput=()=>{
+    const k=i.dataset.c,ix=+i.dataset.i;S.comm[k]=S.comm[k]||[{},{},{},{}];S.comm[k][ix]=S.comm[k][ix]||{};S.comm[k][ix][i.dataset.f]=i.value;save();
+  });
+  const f=$('#fait');if(f)f.onchange=()=>{S.fait=f.value;save()};
+  const v=$('#verif');if(v)v.onchange=()=>{S.verif=v.value;save()};
+  const se=$('#seul');if(se)se.onchange=()=>{S.seul=se.checked;if(S.seul){S.verif='';S.c2=false}save();render()};
+  ['c1','c2','c3'].forEach(id=>{const e=$('#'+id);if(e)e.onchange=()=>{S[id]=e.checked;save()}});
+  const n=$('#notes');if(n)n.oninput=()=>{S.notes=n.value;save()};
+  const bk=$('#back');if(bk)bk.onclick=()=>{S.step='start';save();render()};
+  const sb=$('#submit');if(sb)sb.onclick=submit;
+  const nb=$('#newb');if(nb)nb.onclick=newSheet;
+}
+
+function buildPayload(){
+  const secs=sectionsFor(S.model);
+  const items=[],comm=[];let tot=0,done=0;
+  secs.forEach(s=>{
+    if(s.w){
+      const rows=(S.comm[s.key]||[]).filter(r=>r&&((r.d||'').trim()||(r.w||'').trim())).map(r=>({d:(r.d||'').trim(),w:(r.w||'').trim()}));
+      comm.push({title:s.title,sub:s.sub,rows});
+    }else{
+      items.push({title:s.title,rows:s.rows.map(r=>{tot++;const c=!!S.checks[r.key];if(c)done++;return {text:plain(r.html),who:QUI[r.who]||'',checked:c}})});
+    }
+  });
+  return {id:S.id,version:APP_VERSION,sentAt:new Date().toISOString(),model:S.model,
+    modelLabel:S.model==='A'?'Modèle A – 1 employé':'Modèle B – 2 à 3 employés',
+    commerce:S.commerce,date:S.date,heure:S.heure,employes:S.emp.filter(x=>x.trim()),responsable:S.resp,
+    faitPar:S.fait,verifiePar:S.seul?'(employé seul)':S.verif,seul:S.seul,
+    confirmations:{tachesCompletees:S.c1,collegueAVerifie:S.seul?null:S.c2,lumieresEtCoffre:S.c3},
+    notes:S.notes.trim(),total:tot,faites:done,sections:items,communication:comm};
+}
+
+async function submit(){
+  const miss=[];const st=stats();
+  if(!S.fait)miss.push('« Tâches faites par »');
+  if(S.model==='B'&&!S.seul){
+    if(!S.verif)miss.push('« Vérifié par » (la collègue)');
+    else if(S.verif===S.fait)miss.push('« Vérifié par » doit être une autre personne que « Faites par »');
+    if(!S.c2)miss.push('la confirmation de revérification par la collègue');
+  }
+  if(!S.c1)miss.push('la confirmation que toutes les tâches du close sont complétées');
+  if(!S.c3)miss.push('la confirmation des lumières et des enveloppes');
+  if(st.done<st.tot&&!S.notes.trim())miss.push(`une note qui explique pourquoi ${st.tot-st.done} tâche(s) ne sont pas cochées`);
+  if(miss.length){$('#serr').innerHTML=`<div class="err"><b>Impossible de soumettre. Il manque :</b><br>• ${miss.join('<br>• ')}</div>`;$('#serr').scrollIntoView({behavior:'smooth',block:'center'});return}
+  const btn=$('#submit');btn.disabled=true;btn.textContent='Envoi en cours…';
+  const payload=buildPayload();
+  const ok=await send(payload);
+  if(ok){localStorage.removeItem('draft');S=blank();S.step='done';render()}
+  else{
+    const p=LS.get('pending',[]);p.push(payload);LS.set('pending',p);
+    localStorage.removeItem('draft');S=blank();S.step='start';render();
+    $('#serr').innerHTML=`<div class="err"><b>Pas de réseau ou envoi impossible.</b> La feuille est gardée sur cet iPad et sera renvoyée automatiquement. Ne la refaites pas.</div>`;
+  }
+}
+
+async function send(payload){
+  if(!ENDPOINT)return false;
+  try{
+    await fetch(ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});
+    return true;
+  }catch(e){return false}
+}
+async function flushPending(manual){
+  const p=LS.get('pending',[]);if(!p.length)return;
+  const left=[];
+  for(const x of p){if(!(await send(x)))left.push(x)}
+  LS.set('pending',left);
+  if(S.step==='start')render();
+}
+window.addEventListener('online',()=>flushPending(false));
+setInterval(()=>flushPending(false),120000);
+if(S.step==='done')S.step='start';
+render();
+if('serviceWorker' in navigator&&location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+</script>
+</body>
+</html>
